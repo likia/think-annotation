@@ -81,15 +81,6 @@ trait InteractsWithRoute
                 continue;
             }
 
-            $filename = $construct->fileNames()[0];
-
-            $prefix = $class;
-
-            if (Str::startsWith($filename, $this->controllerDir)) {
-                //控制器
-                $filename = Str::substr($filename, strlen($this->controllerDir) + 1);
-            }
-
             $routes = [];
             //方法
             foreach ($refClass->getMethods(ReflectionMethod::IS_PUBLIC) as $refMethod) {
@@ -130,7 +121,7 @@ trait InteractsWithRoute
                 }
             }
 
-            $groups[] = function () use ($routes, $refClass, $prefix) {
+            $groups[] = function () use ($routes, $refClass) {
                 $groupName    = '';
                 $groupOptions = [];
                 if ($groupAnn = $this->reader->getAnnotation($refClass, Group::class)) {
@@ -138,7 +129,7 @@ trait InteractsWithRoute
                     $groupOptions = $groupAnn->options;
                 }
 
-                $group = $this->route->group($groupName, function () use ($refClass, $prefix, $routes) {
+                $group = $this->route->group($groupName, function () use ($refClass, $routes) {
                     //注册路由
                     foreach ($routes as $route) {
                         $route();
@@ -146,7 +137,7 @@ trait InteractsWithRoute
 
                     if ($resourceAnn = $this->reader->getAnnotation($refClass, Resource::class)) {
                         //资源路由
-                        $this->route->resource($resourceAnn->rule, $prefix)->option($resourceAnn->options);
+                        $this->route->resource($resourceAnn->rule, $refClass->name)->option($resourceAnn->options);
                     }
                 });
 

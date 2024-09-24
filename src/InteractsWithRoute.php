@@ -88,7 +88,6 @@ trait InteractsWithRoute
             if (Str::startsWith($filename, $this->controllerDir)) {
                 //控制器
                 $filename = Str::substr($filename, strlen($this->controllerDir) + 1);
-                $prefix   = str_replace($this->controllerSuffix . '.php', '', str_replace(DIRECTORY_SEPARATOR, '.', $filename));
             }
 
             $routes = [];
@@ -96,9 +95,9 @@ trait InteractsWithRoute
             foreach ($refClass->getMethods(ReflectionMethod::IS_PUBLIC) as $refMethod) {
                 if ($routeAnn = $this->reader->getAnnotation($refMethod, Route::class)) {
 
-                    $routes[] = function () use ($routeAnn, $prefix, $refMethod) {
+                    $routes[] = function () use ($routeAnn, $refMethod, $class) {
                         //注册路由
-                        $rule = $this->route->rule($routeAnn->rule, "{$prefix}/{$refMethod->getName()}", $routeAnn->method);
+                        $rule = $this->route->rule($routeAnn->rule, "{$class}@{$refMethod->getName()}", $routeAnn->method);
 
                         $rule->option($routeAnn->options);
 
